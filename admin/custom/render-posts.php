@@ -164,7 +164,7 @@ class Render_Posts {
 				$approve_site = sprintf('<a data-title="%s" class="approval button button-primary" href="#">Approve</a>', esc_html( $post->title->rendered ) );
 
 				// Show a linked title and post date.
-				$all_posts .= $approve_site . ' <a href="' . esc_url( $post->link ) . '" target=\"_blank\">' . esc_html( $post->title->rendered ) . '</a> ' . esc_html( $fordate ) . '<br />';
+				$all_posts .= '<div>' . $approve_site . ' <a href="' . esc_url( $post->link ) . '" target=\"_blank\">' . esc_html( $post->title->rendered ) . '</a> ' . esc_html( $fordate ) . '</div><br />';
 			}
 
 			print_r( $all_posts );
