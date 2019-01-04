@@ -65,6 +65,7 @@ class Render_Posts {
 			<form action="" method="post">
 				<label>Filter Sites</label>
 				<select class="form-control" name="filter_sites" onchange="this.form.submit()">
+					<option>Filter Sites</option>
 					<option value="https://wordpress.org/news">WordPress News</option>
 					<option value="https://wptavern.com">WP Tavern</option>
 					<option value="https://wpmayor.com">WP Mayor</option>
@@ -74,9 +75,9 @@ class Render_Posts {
 		</br>
 		<?php
 
-		$option = isset($_POST['filter_sites']) ? $_POST['filter_sites'] : false;
+		$selected_site = isset( $_POST['filter_sites'] ) ? $_POST['filter_sites'] : false;
 
-		$this->get_posts_via_rest( $option );
+		$this->get_posts_via_rest( $selected_site );
 	}
 
 	/**
@@ -86,21 +87,21 @@ class Render_Posts {
 	 * @return array $all_posts
 	 */
 	public function get_posts_via_rest( $selected_site ) {
-		if (  $selected_site !== false ) {
+		if ( $selected_site !== false ) {
 			$response = wp_remote_get( $selected_site . '/wp-json/wp/v2/posts' );
 			$this->sort_response( $response );
 		} else {
 			$sites = array(
-				'https://wordpress.org/news',
-				'https://wptavern.com',
-				'https://wpmayor.com'
+				'WordPress News' => 'https://wordpress.org/news',
+				'WP Tavern'      => 'https://wptavern.com',
+				'WP Mayor'       => 'https://wpmayor.com'
 			);
 
-			foreach ( $sites as $response ) {
+			foreach ( $sites as $site_name => $response ) {
 				$response = wp_remote_get( $response . '/wp-json/wp/v2/posts' );
-				$this->sort_response( $response );
+				printf( '<h2>%s</h2>', esc_html( $site_name ) );
+				$this->sort_response( $response, $site_name );
 			}
-			
 		}
 	}
 
@@ -108,7 +109,7 @@ class Render_Posts {
 	 * Sort response
 	 *
 	 */
-	public function sort_response( $response ) {
+	public function sort_response( $response, $site_name = "" ) {
 		// Exit if error.
 		if ( is_wp_error( $response ) ) {
 			return;
