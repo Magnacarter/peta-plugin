@@ -72,12 +72,32 @@ class Render_Posts {
 				</select>
 			</form>
 		</div>
+
+		<div class="post-count">
+			<form action="" method="post">
+				<label>Filter Post Count</label>
+				<select class="form-control" name="filter_post_count" onchange="this.form.submit()">
+					<option>Filter Post Count</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+					<option value="8">8</option>
+					<option value="9">9</option>
+					<option value="10">10</option>
+				</select>
+			</form>
+		</div>
 		</br>
 		<?php
 
+		$post_count    = isset( $_POST['filter_post_count'] ) ? $_POST['filter_post_count'] : false;
 		$selected_site = isset( $_POST['filter_sites'] ) ? $_POST['filter_sites'] : false;
 
-		$this->get_posts_via_rest( $selected_site );
+		$this->get_posts_via_rest( $selected_site, $post_count );
 	}
 
 	/**
@@ -86,9 +106,13 @@ class Render_Posts {
 	 * @param string $selected_site
 	 * @return array $all_posts
 	 */
-	public function get_posts_via_rest( $selected_site ) {
+	public function get_posts_via_rest( $selected_site, $post_count ) {
 		if ( $selected_site !== false ) {
-			$response = wp_remote_get( $selected_site . '/wp-json/wp/v2/posts' );
+			if ( $post_count !== false ) {
+				$response = wp_remote_get( $selected_site . '/wp-json/wp/v2/posts?per_page=' . $post_count );
+			} else {
+				$response = wp_remote_get( $selected_site . '/wp-json/wp/v2/posts' );
+			}
 			$this->sort_response( $response );
 		} else {
 			$sites = array(
@@ -98,7 +122,11 @@ class Render_Posts {
 			);
 
 			foreach ( $sites as $site_name => $response ) {
-				$response = wp_remote_get( $response . '/wp-json/wp/v2/posts' );
+				if ( $post_count !== false ) {
+					$response = wp_remote_get( $response . '/wp-json/wp/v2/posts?per_page=' . $post_count );
+				} else {
+					$response = wp_remote_get( $response . '/wp-json/wp/v2/posts' );
+				}
 				printf( '<h2>%s</h2>', esc_html( $site_name ) );
 				$this->sort_response( $response, $site_name );
 			}
@@ -108,6 +136,7 @@ class Render_Posts {
 	/**
 	 * Sort response
 	 *
+	 * @return void
 	 */
 	public function sort_response( $response, $site_name = "" ) {
 		// Exit if error.
