@@ -57,7 +57,7 @@ function public_scripts() {
  * @return void
  */
 function admin_scripts() {
-	wp_enqueue_style(  'peta_admin_styles',  PETA_URL . 'assets/css/admin.css', PETA_VER );
+	wp_enqueue_style(  'peta_admin_styles',  PETA_URL . 'assets/css/admin-styles.css', PETA_VER );
 	wp_enqueue_style(  'select2_css',        PETA_URL . 'assets/css/select2.min.css', PETA_VER );
 	wp_enqueue_script( 'select2_js',         PETA_URL . 'assets/js/select2.min.js', array( 'jquery' ), PETA_VER, false );
 	wp_enqueue_script( 'peta_admin_script',  PETA_URL . 'assets/js/admin-script.js', array( 'jquery' ), PETA_VER, false );

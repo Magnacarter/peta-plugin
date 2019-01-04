@@ -36,8 +36,8 @@ class Render_Posts {
 			add_action( 'wp_dashboard_setup', array( $this, 'add_dashboard_widgets' ) );
 		}
 		add_action( 'wp_enqueue_scripts',          array( $this, 'peta_enqueue_script' ) );
-		add_action( 'wp_ajax_filter_sites',        array( $this, 'filter_sites' ) );
-		add_action( 'wp_ajax_nopriv_filter_sites', array( $this, 'filter_sites' ) );
+		add_action( 'wp_ajax_approve_site',        array( $this, 'approve_site' ) );
+		add_action( 'wp_ajax_nopriv_approve_site', array( $this, 'approve_site' ) );
 	}
 
 	/**
@@ -161,9 +161,10 @@ class Render_Posts {
 				// Use print_r($post); to get the details of the post and all available fields
 				// Format the date.
 				$fordate = date( 'n/j/Y', strtotime( $post->modified ) );
+				$approve_site = sprintf('<a data-title="%s" class="approval button button-primary" href="#">Approve</a>', esc_html( $post->title->rendered ) );
 
 				// Show a linked title and post date.
-				$all_posts .= '<a href="' . esc_url( $post->link ) . '" target=\"_blank\">' . esc_html( $post->title->rendered ) . '</a>  ' . esc_html( $fordate ) . '<br />';
+				$all_posts .= $approve_site . ' <a href="' . esc_url( $post->link ) . '" target=\"_blank\">' . esc_html( $post->title->rendered ) . '</a> ' . esc_html( $fordate ) . '<br />';
 			}
 
 			print_r( $all_posts );
@@ -178,21 +179,23 @@ class Render_Posts {
 	 * @since 1.0.0
 	 * @return string $website_url
 	 */
-	public function filter_sites() {
+	public function approve_site() {
 		if (
 			'POST' === $_SERVER['REQUEST_METHOD']
 			||
-			! isset( $_POST['website_url'] )
+			! isset( $_POST['approve_site'] )
 		) {
-			$website_url = filter_var( $_POST['website_url'], FILTER_SANITIZE_URL );
+			$approved_site = $_POST['approve_site'];
+			$current_user  = wp_get_current_user();
+			$meta_value    = array( $current_user->display_name, current_time( 'timestamp', $gmt = 0 ) );
+			update_option( $approved_site, $meta_value );
 
 			$data = array(
-				'url'  => $website_url,
+				'approvedSite'  => $approved_site,
 			);
 
 			wp_send_json_success( $data );
 
-			return $website_url;
 		} else {
 			wp_send_json_error();
 		}
@@ -212,7 +215,7 @@ class Render_Posts {
 		wp_localize_script( 'jquery', 'peta_enqueue_scripts',
 			array(
 				'ajaxurl'      => admin_url( 'admin-ajax.php' ),
-				'php_callback' => __NAMESPACE__ . '\filter_sites',
+				'php_callback' => __NAMESPACE__ . '\approve_site',
 			)
 		);
 	}
